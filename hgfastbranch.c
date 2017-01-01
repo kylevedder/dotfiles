@@ -28,97 +28,97 @@
 #define SAFE_CHAR_REALLOC(ptr, size) if (((ptr) = (char *)realloc((ptr), (size) * sizeof(char))) == NULL) panic();
 
 void panic() {
-	exit(EXIT_FAILURE);
+  exit(EXIT_FAILURE);
 }
 
 bool is_hg_dir(const char *pwd) {
-	char *hg_path;
-	size_t plen;
-	int statret;
-	struct stat st;
+  char *hg_path;
+  size_t plen;
+  int statret;
+  struct stat st;
 
-	plen = strlen(pwd);
-	SAFE_CHAR_MALLOC(hg_path, plen + 5);
-	sprintf(hg_path, "%s/.hg", pwd);
-	statret = stat(hg_path, &st);
-	free(hg_path);
+  plen = strlen(pwd);
+  SAFE_CHAR_MALLOC(hg_path, plen + 5);
+  sprintf(hg_path, "%s/.hg", pwd);
+  statret = stat(hg_path, &st);
+  free(hg_path);
 
-	return statret == 0;
+  return statret == 0;
 }
 
 char* get_branch(const char *repo) {
-	FILE *f;
-	char *branchfile, *branchname;
-	size_t plen, read, cchar, csize;
-	int k;
+  FILE *f;
+  char *branchfile, *branchname;
+  size_t plen, read, cchar, csize;
+  int k;
 
-	plen = strlen(repo);
-	SAFE_CHAR_MALLOC(branchfile, plen + 12);
-	sprintf(branchfile, "%s/.hg/branch", repo);
+  plen = strlen(repo);
+  SAFE_CHAR_MALLOC(branchfile, plen + 12);
+  sprintf(branchfile, "%s/.hg/branch", repo);
 
-	if ((f = fopen(branchfile, "r")) == NULL)
-		return "default";
+  if ((f = fopen(branchfile, "r")) == NULL)
+    return "default";
 
-	free(branchfile);
+  free(branchfile);
 
-	csize = MALLOC_CHUNK;
-	SAFE_CHAR_MALLOC(branchname, csize);
+  csize = MALLOC_CHUNK;
+  SAFE_CHAR_MALLOC(branchname, csize);
 
-	cchar = 0;
-	while (true) {
-		read = fread(branchname + cchar, sizeof(char), MALLOC_CHUNK, f);
-		cchar += read;
+  cchar = 0;
+  while (true) {
+    read = fread(branchname + cchar, sizeof(char), MALLOC_CHUNK, f);
+    cchar += read;
 
-		if (read < MALLOC_CHUNK) {
-			break;  // Don't care about the difference between eof and err
+    if (read < MALLOC_CHUNK) {
+      break;  // Don't care about the difference between eof and err
     }
 
-		csize += MALLOC_CHUNK;
-		SAFE_CHAR_REALLOC(branchname, csize);
-	}
+    csize += MALLOC_CHUNK;
+    SAFE_CHAR_REALLOC(branchname, csize);
+  }
 
-	branchname[cchar] = 0;
-	for (k = 0; k < cchar; k++) {
-		if (branchname[k] == '\n') {
-			branchname[k] = 0;
-			break;
-		}
-	}
-	SAFE_CHAR_REALLOC(branchname, k + 1);
-	fclose(f);
-	return branchname;
+  branchname[cchar] = 0;
+  for (k = 0; k < cchar; k++) {
+    if (branchname[k] == '\n') {
+      branchname[k] = 0;
+      break;
+    }
+  }
+  SAFE_CHAR_REALLOC(branchname, k + 1);
+  fclose(f);
+  return branchname;
 }
 
 char* get_repo() {
-	char *dir_path;
-	int len, k;
-	dir_path = getcwd(NULL, 0);
+  char *dir_path;
+  int len, k;
+  dir_path = getcwd(NULL, 0);
 
-	while ((len = strlen(dir_path)) > 0) {
-		if (is_hg_dir(dir_path)) {
-			SAFE_CHAR_REALLOC(dir_path, strlen(dir_path) + 1);
-			return dir_path;
-		}
+  while ((len = strlen(dir_path)) > 0) {
+    if (is_hg_dir(dir_path)) {
+      SAFE_CHAR_REALLOC(dir_path, strlen(dir_path) + 1);
+      return dir_path;
+    }
 
-		for (k = len - 1; k >= 0; k--) {
-			if (dir_path[k] == '/') {
-				dir_path[k] = 0;
-				break;
-			}
-		}
-	}
+    for (k = len - 1; k >= 0; k--) {
+      if (dir_path[k] == '/') {
+        dir_path[k] = 0;
+        break;
+      }
+    }
+  }
 
-	free(dir_path);
-	return NULL;
+  free(dir_path);
+  return NULL;
 }
 
 int main(int argc, char** argv) {
-	char *repo;
-	char *format;
+  char *repo;
+  char *format;
 
-	repo = get_repo();
-	if (repo == NULL) {
-		return 0;
+  repo = get_repo();
+  if (repo == NULL) {
+    return 0;
   }
 
   if (argc > 1) {
@@ -129,5 +129,5 @@ int main(int argc, char** argv) {
     printf(format, get_branch(repo));
   }
 
-	return 0;
+  return 0;
 }
