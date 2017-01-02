@@ -122,10 +122,10 @@ int main(int argc, char** argv) {
   }
 
   if (argc > 1) {
-    format = " %s \\[\e[33m\\]%s\\[\e[0m\\]";
+    format = " %s %s";
     printf(format, argv[1], get_branch(repo));
   } else {
-    format = " on \\[\e[33m\\]%s\\[\e[0m\\]";
+    format = " on %s";
     printf(format, get_branch(repo));
   }
 
